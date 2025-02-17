@@ -11,7 +11,7 @@
 
 ```bash
 pip install scikit-learn python-levenshtein
-
+```
 ## Использование
 
 Скачайте и разархивируйте репозиторий. Заранее убедитесь, что у вас установлен Python. Если он не установлен, перейдите на [сайт](https://www.python.org/), скачайте установщик и следуйте дальнейшим инструкциям.
@@ -22,12 +22,12 @@ pip install scikit-learn python-levenshtein
 
 ```bash
 python main.py
-
+```
 или
 
 ```bash
 py main.py
- 
+ ```
 
 
 
