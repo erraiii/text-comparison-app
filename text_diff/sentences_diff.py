@@ -48,38 +48,28 @@ def get_offindexes_list(sentences_list):
     return offindex
 
 
-def find_add_rem_sim_sents(text1_parts, text2_parts, differences, selected_word):
-    offsets_text1 = get_offindexes_list(text1_parts)
-    offsets_text2 = get_offindexes_list(text2_parts)
+def find_add_rem_sim_sents(text1_parts, text2_parts):
 
     removed_sentences_set = set()
     added_sentences_set = set()
 
     similar_sentences = []
 
-    n = differences[selected_word] * 2 + 1
+    sentences1 = text1_parts
+    sentences2 = text2_parts
+    offset1 = 0
+    offset2 = 0
 
-    for i, sentence1 in enumerate(text1_parts):
-        start_index = max(0, i - n)
-        end_index = min(len(text2_parts) - 1, i + n)
+    added, removed, unmodified = diff_sentences(sentences1, sentences2, offset1, offset2)
 
-        sentences1 = [text1_parts[i]]
-        sentences2 = text2_parts[start_index:end_index + 1]
+    for sentence, position in added:
+        added_sentences_set.add((sentence, position))
 
-        # Используем заранее вычисленные индексы
-        offset1 = offsets_text1[i]
-        offset2 = offsets_text2[start_index]
+    for sentence, position in removed:
+        removed_sentences_set.add((sentence, position))
 
-        added, removed, unmodified = diff_sentences(sentences1, sentences2, offset1, offset2)
-
-        for sentence, position in added:
-            added_sentences_set.add((sentence, position))
-
-        for sentence, position in removed:
-            removed_sentences_set.add((sentence, position))
-
-        new_data = find_similar_sentences(removed, added)
-        similar_sentences.extend(new_data)
+    new_data = find_similar_sentences(removed, added)
+    similar_sentences.extend(new_data)
 
     print('\nРезультат:')
     print("Добавленные предложения:")

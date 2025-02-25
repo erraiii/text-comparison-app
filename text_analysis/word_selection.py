@@ -5,7 +5,7 @@ def select_split_word(text1, text2, target_length=100):
     """Выбирает слова для разделения текста"""
     words1 = preprocess_text(text1)
     words2 = preprocess_text(text2)
-    print(words1, words2)
+    # print(words1, words2)
 
     counter1 = count_word_frequencies(words1)
     counter2 = count_word_frequencies(words2)

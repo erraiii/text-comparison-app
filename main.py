@@ -14,12 +14,16 @@ text_1 = file1.read()
 text_2 = file2.read()
 text1 = preprocess_text(text_1)
 text2 = preprocess_text(text_2)
+#print(text1, 'text 1')
+#print(text2, 'text 2')
 
 selected_word, differences = select_split_word(text1, text2)
 text1_p, text2_p = split_texts_by_selected_word(text1, text2, selected_word)
+# print(text1_p, 'text 1')
+# print(text2_p, 'text 2')
 
 added_sentences_set, removed_sentences_set, similar_sentences = (
-    find_add_rem_sim_sents(text1_p, text2_p, differences, selected_word))
+    find_add_rem_sim_sents(text1_p, text2_p))
 
 final_added, final_removed = find_unique_diff_sents(added_sentences_set, removed_sentences_set, similar_sentences)
 added_words_res, removed_words_res = find_add_rem_words(similar_sentences)
