@@ -5,9 +5,6 @@ from text_diff import (find_add_rem_sim_sents, find_unique_diff_sents,
 from visualization import show_highlighted_text
 
 
-import os
-print(os.getcwd())
-
 file1 = open("text1.txt", encoding="utf-8")
 file2 = open("text2.txt", encoding="utf-8")
 text_1 = file1.read()
