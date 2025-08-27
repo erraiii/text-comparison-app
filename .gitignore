@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+.idea/
+
+venv/
+.venv/
+env/
+
+.DS_Store
+Thumbs.db
+desktop.ini

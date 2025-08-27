@@ -1,19 +1,27 @@
 from difflib import SequenceMatcher
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from text_analysis.text_utils import remove_punctuation, normalize_old_russian
 
 def diff_sentences(sents1, sents2, offs1, offs2):
     added_sentences = []
     removed_sentences = []
     unmodified_sentences = []
+    replaced_sentences_sents1 = []  # (text, offset, block_id)
+    replaced_sentences_sents2 = []
 
     matcher = SequenceMatcher(None, sents1, sents2)
+    block_id = 0
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag == 'replace':
             for idx in range(i1, i2):
-                removed_sentences.append((sents1[idx], offs1 + sum(len(s) + 1 for s in sents1[:idx])))
+                offset = offs1 + sum(len(s) + 1 for s in sents1[:idx])
+                replaced_sentences_sents1.append((sents1[idx], offset, block_id))
             for idx in range(j1, j2):
-                added_sentences.append((sents2[idx], offs2 + sum(len(s) + 1 for s in sents2[:idx])))
+                offset = offs2 + sum(len(s) + 1 for s in sents2[:idx])
+                replaced_sentences_sents2.append((sents2[idx], offset, block_id))
+            block_id += 1
         elif tag == 'delete':
             for idx in range(i1, i2):
                 removed_sentences.append((sents1[idx], offs1 + sum(len(s) + 1 for s in sents1[:idx])))
@@ -24,21 +32,54 @@ def diff_sentences(sents1, sents2, offs1, offs2):
             for idx in range(i1, i2):
                 unmodified_sentences.append((sents1[idx], offs1 + sum(len(s) + 1 for s in sents1[:idx])))
 
-    return added_sentences, removed_sentences, unmodified_sentences
+    return added_sentences, removed_sentences, unmodified_sentences, replaced_sentences_sents1, replaced_sentences_sents2
 
 
-def find_similar_sentences(sents1, sents2, threshold=0.5):
-    sim_sentences = []
+def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): # при различном количестве разбиений
+    print('\n===СРАВНИВАНИЕ ПРЕДЛОЖЕНИЙ===')
 
-    for sen1, sen1_index in sents1:
-        for sen2, sen2_index in sents2:
-            similarity_ratio = SequenceMatcher(None, sen1, sen2).ratio()
+    similar_sentences = []
 
-            # Проверяем степень сходства предложений по пороговому значению
-            if similarity_ratio > threshold:
-                sim_sentences.append((sen1, sen2, similarity_ratio, sen1_index, sen2_index))
+    blocks = set(bid for _, _, bid in sents1) & set(bid for _, _, bid in sents2)
 
-    return sim_sentences
+    for block_id in blocks:
+        block1 = [(text, offset) for text, offset, bid in sents1 if bid == block_id]
+        block2 = [(text, offset) for text, offset, bid in sents2 if bid == block_id]
+
+        if not block1 or not block2:
+            continue
+
+        texts1 = [normalize_old_russian(remove_punctuation(text)) for text, _ in block1]
+        texts2 = [normalize_old_russian(remove_punctuation(text)) for text, _ in block2]
+        print("ПРОВЕРКА ПУНКТУАЦИИ")
+        print(texts1)
+        print(texts2)
+
+
+        all_texts = texts1 + texts2
+        vectorizer = TfidfVectorizer().fit(all_texts)
+        tfidf_matrix = vectorizer.transform(all_texts)
+        tfidf_sents1 = tfidf_matrix[:len(texts1)]
+        tfidf_sents2 = tfidf_matrix[len(texts1):]
+
+        sim_matrix = cosine_similarity(tfidf_sents1, tfidf_sents2)
+
+        for i, (sen1, idx1) in enumerate(block1):
+            for j, (sen2, idx2) in enumerate(block2):
+                similarity = sim_matrix[i, j]
+                sent1 = normalize_old_russian(remove_punctuation(sen1))
+                sent2 = normalize_old_russian(remove_punctuation(sen2))
+                sequence_sim = SequenceMatcher(None, sent1, sent2).ratio()
+
+                print(f'\nПредложение 1: {sen1}')
+                print(f'Предложение 2: {sen2}')
+                print('Косинусное расстояние',similarity)
+                print('SM: ', sequence_sim)
+                if similarity >= threshold or (sequence_sim >= seq_threshold and similarity >= 0.35):
+                    similar_sentences.append((sen1, sen2, similarity, sequence_sim, idx1, idx2,block_id))
+                    print("Похожие")
+                print()
+    return similar_sentences
 
 
 def get_offindexes_list(sentences_list):
@@ -46,61 +87,3 @@ def get_offindexes_list(sentences_list):
     for sent in sentences_list:
         offindex.append(offindex[-1] + len(sent) + 1)
     return offindex
-
-
-def find_add_rem_sim_sents(text1_parts, text2_parts):
-
-    removed_sentences_set = set()
-    added_sentences_set = set()
-
-    similar_sentences = []
-
-    sentences1 = text1_parts
-    sentences2 = text2_parts
-    offset1 = 0
-    offset2 = 0
-
-    added, removed, unmodified = diff_sentences(sentences1, sentences2, offset1, offset2)
-
-    for sentence, position in added:
-        added_sentences_set.add((sentence, position))
-
-    for sentence, position in removed:
-        removed_sentences_set.add((sentence, position))
-
-    new_data = find_similar_sentences(removed, added)
-    similar_sentences.extend(new_data)
-
-    print('\nРезультат:')
-    print("Добавленные предложения:")
-    for sentence, position in added_sentences_set:
-        print(f"+ {sentence} - Индекс: {position}")
-    print("Удаленные предложения:")
-    for sentence, position in removed_sentences_set:
-        print(f"- {sentence} - Индекс: {position}")
-
-    return added_sentences_set, removed_sentences_set, similar_sentences
-
-
-def find_unique_diff_sents(add_sent_set, rem_sent_set, similar_sentences):
-    matched_removed = set()
-    matched_added = set()
-
-    for s1, s2, similarity, ind1, ind2 in similar_sentences:
-        matched_removed.add(s1)  # Удаленные предложения с похожими
-        matched_added.add(s2)
-
-        print(f"\nSimilarity: {similarity:.3f}\nText 1: {s1} Index: {ind1}\nText 2: {s2} Index: {ind2}")
-
-    final_removed = {(s, p) for (s, p) in rem_sent_set if s not in matched_removed}
-    final_added = {(s, p) for (s, p) in add_sent_set if s not in matched_added}
-
-    print("Уникальные удаленные предложения (без похожих):")
-    for s, p in final_removed:
-        print(f"- {s} (Position: {p})")
-
-    print("\nУникальные добавленные предложения (без похожих):")
-    for s, p in final_added:
-        print(f"+ {s} (Position: {p})")
-
-    return final_added, final_removed

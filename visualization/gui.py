@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-def show_highlighted_text(text1, text2, added, removed, lev_dist, cos_dist):
+def show_highlighted_text(text1, text2, added, removed, lev_dist, cos_dist, replaced_pairs=None):
     """Отображает тексты с выделенными изменениями в графическом интерфейсе"""
     root = tk.Tk()
     root.title("Сравнение текстов")
@@ -36,30 +36,36 @@ def show_highlighted_text(text1, text2, added, removed, lev_dist, cos_dist):
     text_widget2.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=5)
     text_widget2.insert(tk.END, text2)
 
+    # Настройка тегов для выделения
     text_widget1.tag_configure("removed_tag", foreground="red")
     text_widget2.tag_configure("added_tag", foreground="green")
+    text_widget1.tag_configure("replaced_tag", foreground="orange")
+    text_widget2.tag_configure("replaced_tag", foreground="orange")
 
     def highlight_word(text_widget, word, start_index, tag):
-        """Выделяет слово в текстовом виджете с учётом переносов строк."""
-        lines = text_widget.get("1.0", tk.END).split("\n")
-        current_index = 0
+        """Выделяет слово в текстовом виджете с учётом абсолютной позиции в тексте."""
+        content = text_widget.get("1.0", tk.END)
+        if start_index >= len(content):
+            return
+        end_index = start_index + len(word)
+        start_pos = text_widget.index(f"1.0 + {start_index} chars")
+        end_pos = text_widget.index(f"1.0 + {end_index} chars")
+        text_widget.tag_add(tag, start_pos, end_pos)
 
-        for line_num, line in enumerate(lines, start=1):
-            if current_index + len(line) >= start_index:
-                # Находим позицию слова в текущей строке
-                column = start_index - current_index
-                start_pos = f"{line_num}.{column}"
-                end_pos = f"{line_num}.{column + len(word)}"
-                text_widget.tag_add(tag, start_pos, end_pos)
-                break
-            current_index += len(line) + 1  # +1 для учёта символа переноса строки
-
+    # Подсветка удаленных и добавленных слов
     for word, start_index in removed:
         highlight_word(text_widget1, word, start_index, "removed_tag")
 
     for word, start_index in added:
         highlight_word(text_widget2, word, start_index, "added_tag")
 
+    # Подсветка замененных слов
+    if replaced_pairs:
+        for (word1, idx1), (word2, idx2) in replaced_pairs:
+            highlight_word(text_widget1, word1, idx1, "replaced_tag")
+            highlight_word(text_widget2, word2, idx2, "replaced_tag")
+
+    # Метрики
     metrics_frame = ttk.Frame(frame, padding="10")
     metrics_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E))
 
