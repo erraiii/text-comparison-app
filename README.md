@@ -38,7 +38,7 @@ py main.py
 
 Запуск с явными или относительными путями к файлам с текстами:
 ```bash
-py main.py C:\\path\\to\\the\\file1.txt C:\\path\\to\\the\\file2.txt
+py main.py C:\path\to\the\file1.txt C:\path\to\the\file2.txt
 ```
 
 ## Что вы увидите
