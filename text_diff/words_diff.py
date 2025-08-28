@@ -1,11 +1,12 @@
 from difflib import SequenceMatcher
+import logging
 
 
 def find_diff_words(sent1, sent2):
     words1 = sent1[0].replace('\n', ' ').split(" ")
     words2 = sent2[0].replace('\n', ' ').split(" ")
-    print(words1)
-    print(words2)
+    logging.debug("words1: %s", words1)
+    logging.debug("words2: %s", words2)
 
     matcher = SequenceMatcher(None, words1, words2)
     opcodes = matcher.get_opcodes()
@@ -41,9 +42,7 @@ def find_diff_words(sent1, sent2):
             replaced_pairs.add(((phrase1, idx_offset1), (phrase2, idx_offset2)))
             idx_offset1 += sum(len(word) + 1 for word in words1[i1:i2])
             idx_offset2 += sum(len(word) + 1 for word in words2[j1:j2])
-            #print(phrase1)
-            #print(phrase2)
-            print()
+            logging.debug("replace: '%s' -> '%s'", phrase1, phrase2)
 
     return add_diff_words, rm_diff_words, replaced_pairs
 
@@ -65,9 +64,9 @@ def find_add_rem_words(similar_sentences):
         for sentence1, sentence2, idx1, idx2 in block_sentences:
             # Находим изменения в паре предложений
             added, removed, replacements = find_diff_words((sentence1, idx1), (sentence2, idx2))
-            print('Добавленные: ', added)
-            print('Удаленные: ', removed)
-            print('Замены: ', replacements)
+            logging.debug('Добавленные: %s', added)
+            logging.debug('Удаленные: %s', removed)
+            logging.debug('Замены: %s', replacements)
 
             # Добавляем замены
             for rm, add in replacements:

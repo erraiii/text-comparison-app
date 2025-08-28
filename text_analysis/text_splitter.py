@@ -1,4 +1,5 @@
 import re
+import logging
 
 
 def split_texts_by_selected_word(t1, t2, sel_words):
@@ -10,8 +11,7 @@ def split_texts_by_selected_word(t1, t2, sel_words):
     text1_parts = re.split(pattern, t1)
     text2_parts = re.split(pattern, t2)
 
-    print(text1_parts)
-    print(text2_parts)
-    print()
+    logging.debug("text1_parts: %s", text1_parts)
+    logging.debug("text2_parts: %s", text2_parts)
 
     return text1_parts, text2_parts

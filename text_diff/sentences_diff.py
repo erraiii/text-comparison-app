@@ -2,6 +2,15 @@ from difflib import SequenceMatcher
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from text_analysis.text_utils import remove_punctuation, normalize_old_russian
+import logging
+
+
+def _prefix_offsets(items):
+    offsets = [0]
+    for s in items:
+        offsets.append(offsets[-1] + len(s) + 1)
+    return offsets
+
 
 def diff_sentences(sents1, sents2, offs1, offs2):
     added_sentences = []
@@ -13,30 +22,34 @@ def diff_sentences(sents1, sents2, offs1, offs2):
     matcher = SequenceMatcher(None, sents1, sents2)
     block_id = 0
 
+    # Префиксные суммы для O(1) получения смещения
+    pref1 = _prefix_offsets(sents1)
+    pref2 = _prefix_offsets(sents2)
+
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag == 'replace':
             for idx in range(i1, i2):
-                offset = offs1 + sum(len(s) + 1 for s in sents1[:idx])
+                offset = offs1 + pref1[idx]
                 replaced_sentences_sents1.append((sents1[idx], offset, block_id))
             for idx in range(j1, j2):
-                offset = offs2 + sum(len(s) + 1 for s in sents2[:idx])
+                offset = offs2 + pref2[idx]
                 replaced_sentences_sents2.append((sents2[idx], offset, block_id))
             block_id += 1
         elif tag == 'delete':
             for idx in range(i1, i2):
-                removed_sentences.append((sents1[idx], offs1 + sum(len(s) + 1 for s in sents1[:idx])))
+                removed_sentences.append((sents1[idx], offs1 + pref1[idx]))
         elif tag == 'insert':
             for idx in range(j1, j2):
-                added_sentences.append((sents2[idx], offs2 + sum(len(s) + 1 for s in sents2[:idx])))
+                added_sentences.append((sents2[idx], offs2 + pref2[idx]))
         elif tag == 'equal':
             for idx in range(i1, i2):
-                unmodified_sentences.append((sents1[idx], offs1 + sum(len(s) + 1 for s in sents1[:idx])))
+                unmodified_sentences.append((sents1[idx], offs1 + pref1[idx]))
 
     return added_sentences, removed_sentences, unmodified_sentences, replaced_sentences_sents1, replaced_sentences_sents2
 
 
 def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): # при различном количестве разбиений
-    print('\n===СРАВНИВАНИЕ ПРЕДЛОЖЕНИЙ===')
+    logging.debug('=== СРАВНИВАНИЕ ПРЕДЛОЖЕНИЙ ===')
 
     similar_sentences = []
 
@@ -51,9 +64,9 @@ def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): #
 
         texts1 = [normalize_old_russian(remove_punctuation(text)) for text, _ in block1]
         texts2 = [normalize_old_russian(remove_punctuation(text)) for text, _ in block2]
-        print("ПРОВЕРКА ПУНКТУАЦИИ")
-        print(texts1)
-        print(texts2)
+        logging.debug("ПРОВЕРКА ПУНКТУАЦИИ")
+        logging.debug("texts1: %s", texts1)
+        logging.debug("texts2: %s", texts2)
 
 
         all_texts = texts1 + texts2
@@ -71,14 +84,13 @@ def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): #
                 sent2 = normalize_old_russian(remove_punctuation(sen2))
                 sequence_sim = SequenceMatcher(None, sent1, sent2).ratio()
 
-                print(f'\nПредложение 1: {sen1}')
-                print(f'Предложение 2: {sen2}')
-                print('Косинусное расстояние',similarity)
-                print('SM: ', sequence_sim)
+                logging.debug('Предложение 1: %s', sen1)
+                logging.debug('Предложение 2: %s', sen2)
+                logging.debug('Косинусная схожесть: %s', similarity)
+                logging.debug('SM: %s', sequence_sim)
                 if similarity >= threshold or (sequence_sim >= seq_threshold and similarity >= 0.35):
                     similar_sentences.append((sen1, sen2, similarity, sequence_sim, idx1, idx2,block_id))
-                    print("Похожие")
-                print()
+                    logging.debug("Похожие")
     return similar_sentences
 
 

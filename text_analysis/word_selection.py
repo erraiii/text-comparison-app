@@ -3,6 +3,7 @@ import math
 import random
 from math import log
 from text_analysis.text_utils import preprocess_text, count_word_frequencies, find_common_words
+import logging
 
 
 def max_allowed_diff(avg_freq, c=0.5):
@@ -120,14 +121,13 @@ def select_split_words(text1, text2, target_length=50, max_global_limit=100):
 
     est_p = 0.05 # Эмпирическая вероятность успеха одной комбинации
     max_tries = min(estimate_sample_size(est_p, confidence=0.95), max_global_limit)
-    print('Max tries: ', max_tries)
+    logging.debug('Max tries: %s', max_tries)
 
     combos = sample_combinations(candidate_words, desired_splits, max_tries)
 
     best_score = float("inf")
     best_set = []
-    print(combos)
-    print()
+    logging.debug('combos: %s', combos)
     for combo in combos:
         score1 = evaluate_split_quality_for_words(combo, text1)
         score2 = evaluate_split_quality_for_words(combo, text2)
@@ -139,11 +139,11 @@ def select_split_words(text1, text2, target_length=50, max_global_limit=100):
     # est_p = estimate_p(candidate_words, desired_splits, text1, text2)
     # print("ОЦЕНКА ДЛЯ P", est_p)
 
-    print("Лучший набор", best_set)
+    logging.debug("Лучший набор: %s", best_set)
     score1 = evaluate_split_quality_for_words(best_set, text1)
     score2 = evaluate_split_quality_for_words(best_set, text2)
-    print(score1)
-    print(score2)
+    logging.debug("score1: %s", score1)
+    logging.debug("score2: %s", score2)
     if not best_set:
         if len(common_words) < desired_splits:
             return sorted(common_words, key=lambda w: counter1[w] + counter2[w])

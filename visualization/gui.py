@@ -73,7 +73,7 @@ def show_highlighted_text(text1, text2, added, removed, lev_dist, cos_dist, repl
     levenshtein_label = ttk.Label(metrics_frame, text=str(lev_dist), font='Arial 12')
     levenshtein_label.grid(row=0, column=1, sticky=tk.W)
 
-    ttk.Label(metrics_frame, text="Косинусное расстояние:", font='Arial 12').grid(row=1, column=0, sticky=tk.W)
+    ttk.Label(metrics_frame, text="Косинусная схожесть:", font='Arial 12').grid(row=1, column=0, sticky=tk.W)
     cosine_label = ttk.Label(metrics_frame, text=str(cos_dist), font='Arial 12')
     cosine_label.grid(row=1, column=1, sticky=tk.W)
 
