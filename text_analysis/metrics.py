@@ -4,12 +4,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 def levenshtein_similarity(text1, text2):
-    """Схожесть по Левенштейну (0..1)."""
+    """Вычисляет схожесть по алгоритму Левенштейна (0..1)."""
     return round(ratio(text1, text2), 2)
 
 
 def cosine_measure(text1, text2):
-    """Косинусная схожесть на основе TF-IDF векторов (0..1)."""
+    """Вычисляет косинусную схожесть на основе TF-IDF векторов (0..1)."""
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform([text1, text2])
 

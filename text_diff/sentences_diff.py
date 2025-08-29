@@ -6,6 +6,7 @@ import logging
 
 
 def _prefix_offsets(items):
+    """Вычисляет префиксные суммы длин элементов для быстрого получения смещений."""
     offsets = [0]
     for s in items:
         offsets.append(offsets[-1] + len(s) + 1)
@@ -13,6 +14,11 @@ def _prefix_offsets(items):
 
 
 def diff_sentences(sents1, sents2, offs1, offs2):
+    """
+    Находит различия между двумя последовательностями предложений.
+    
+    Возвращает списки добавленных, удаленных, неизмененных и замененных предложений.
+    """
     added_sentences = []
     removed_sentences = []
     unmodified_sentences = []
@@ -48,7 +54,12 @@ def diff_sentences(sents1, sents2, offs1, offs2):
     return added_sentences, removed_sentences, unmodified_sentences, replaced_sentences_sents1, replaced_sentences_sents2
 
 
-def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): # при различном количестве разбиений
+def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65):
+    """
+    Находит похожие предложения между двумя наборами предложений.
+    
+    Использует TF-IDF и SequenceMatcher для определения схожести.
+    """
     logging.debug('=== СРАВНИВАНИЕ ПРЕДЛОЖЕНИЙ ===')
 
     similar_sentences = []
@@ -95,6 +106,7 @@ def find_similar_sentences(sents1, sents2, threshold=0.5, seq_threshold=0.65): #
 
 
 def get_offindexes_list(sentences_list):
+    """Вычисляет список смещений для последовательности предложений."""
     offindex = [0]
     for sent in sentences_list:
         offindex.append(offindex[-1] + len(sent) + 1)

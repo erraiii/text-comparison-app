@@ -3,6 +3,11 @@ import logging
 
 
 def find_diff_words(sent1, sent2):
+    """
+    Находит различия между словами в двух предложениях.
+    
+    Возвращает множества добавленных, удаленных слов и пары замен.
+    """
     words1 = sent1[0].replace('\n', ' ').split(" ")
     words2 = sent2[0].replace('\n', ' ').split(" ")
     logging.debug("words1: %s", words1)
@@ -48,6 +53,11 @@ def find_diff_words(sent1, sent2):
 
 
 def find_add_rem_words(similar_sentences):
+    """
+    Обрабатывает похожие предложения и извлекает различия на уровне слов.
+    
+    Возвращает множества добавленных, удаленных слов и пары замен.
+    """
     removed_words_res = set()  # полученные удаленные слова
     added_words_res = set()  # полученные добавленные слова
     replaced_pairs_res = set()  # полученные пары замен

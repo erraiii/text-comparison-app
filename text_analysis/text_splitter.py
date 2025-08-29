@@ -3,7 +3,11 @@ import logging
 
 
 def split_texts_by_selected_word(t1, t2, sel_words):
-    """Разбивает тексты по заданному списку слов без их удаления"""
+    """
+    Разбивает тексты по заданному списку слов без их удаления.
+    
+    Возвращает списки частей текстов после разбиения.
+    """
     #pattern = r"\s(?=" + "|".join(map(re.escape, sel_words)) + r")"
     #pattern = r"(?<=\s|^)(?=" + "|".join(map(re.escape, sel_words)) + r")(?!\w)"
     pattern = r"\s(?=(?:" + "|".join(map(re.escape, sel_words)) + r")(?!\w))"

@@ -7,7 +7,7 @@ import logging
 
 
 def max_allowed_diff(avg_freq, c=0.5):
-    """Максимально допустимое относительное отклонение частот"""
+    """Вычисляет максимально допустимое относительное отклонение частот."""
     return min(1.0, c / math.sqrt(avg_freq))
 
 
@@ -24,7 +24,7 @@ def estimate_sample_size(p, confidence=0.98):
 
 def sample_combinations(items, k, max_samples):
     """
-    Генерирует случайные уникальные комбинации из items длины k
+    Генерирует случайные уникальные комбинации из items длины k.
     """
     if len(items) < k:
         return []
@@ -46,8 +46,8 @@ def sample_combinations(items, k, max_samples):
 
 def estimate_p(candidate_words, desired_splits, text1, text2, sample_size=100, threshold=10000):
     """
-    Оценивает вероятность p (что случайная комбинация даст хорошее разбиение)
-    threshold - порог дисперсии, при котором считаем разбиение удачным
+    Оценивает вероятность p (что случайная комбинация даст хорошее разбиение).
+    threshold - порог дисперсии, при котором считаем разбиение удачным.
     """
     good = 0
     for _ in range(sample_size):

@@ -4,17 +4,17 @@ from functools import lru_cache
 
 
 def preprocess_text(text):
-    """Приводит текст к нижнему регистру"""
+    """Приводит текст к нижнему регистру."""
     return text.lower()
 
 
 def count_word_frequencies(text):
-    """Считает частоту слов"""
+    """Подсчитывает частоту каждого слова в тексте."""
     return Counter(text.split())
 
 
 def find_common_words(counter1, counter2):
-    """Находит общие слова в двух текстах"""
+    """Находит общие слова в двух текстах на основе их частот."""
     return set(counter1.keys()) & set(counter2.keys())
 
 

@@ -1,8 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 
+
 def show_highlighted_text(text1, text2, added, removed, lev_dist, cos_dist, replaced_pairs=None):
-    """Отображает тексты с выделенными изменениями в графическом интерфейсе"""
+    """
+    Отображает тексты с выделенными изменениями в графическом интерфейсе.
+    
+    Подсвечивает добавленные слова зеленым, удаленные красным, замены оранжевым.
+    """
     root = tk.Tk()
     root.title("Сравнение текстов")
 
